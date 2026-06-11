@@ -364,6 +364,7 @@ const ROSTER = [
 const byId = id => ROSTER.find(r=>r.id===id);
 
 /* ---- asset loading (gated before play) ---- */
+/* ---- asset loading (gated before play) ---- */
 const IMGS = {};         // dir -> {anim: Image}
 let assetsReady = false;
 function loadassets(done){
@@ -376,9 +377,16 @@ function loadassets(done){
     for(const anim in anims){
       need++;
       const im=new Image();
-      im.onload=fin; im.onerror=fin;
-      im.src='assets/'+dir+'/'+anim+'.png';
+      
+      // 1. اربط الأحداث أولاً
+      im.onload=fin; 
+      im.onerror=fin;
+      
+      // 2. احجز مكان الصورة في الكائن فوراً قبل بدء التحميل
       IMGS[dir][anim]=im;
+      
+      // 3. ابدأ التحميل الآن (آخر خطوة)
+      im.src='assets/'+dir+'/'+anim+'.png';
     }
   }
   if(!need) done();
