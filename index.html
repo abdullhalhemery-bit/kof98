@@ -366,7 +366,7 @@ const byId = id => ROSTER.find(r=>r.id===id);
 /* ---- asset loading (gated before play) ---- */
 const IMGS = {};         // dir -> {anim: Image}
 let assetsReady = false;
-function loadassets(done){
+function loadAssets(done){
   const dirs=[...new Set(ROSTER.map(r=>r.dir))];
   let need=0, got=0;
   
@@ -462,7 +462,10 @@ function drawCard(canvas,ch,headOnly){
   const c2=canvas.getContext('2d'); c2.imageSmoothingEnabled=false;
   c2.fillStyle='#101018'; c2.fillRect(0,0,canvas.width,canvas.height);
   const cf=cfgOf(ch.dir), img=IMGS[ch.dir]&&IMGS[ch.dir].idle;
-  if(!img||!img.complete) return;
+  
+  // 🛡️ شرط الحماية المطور: إذا كانت الصورة مكسورة أو غير مكتملة، اخرج فوراً ولا ترسم شيئاً لمنع الانهيار
+  if(!img || !img.complete || img.naturalWidth === 0) return;
+  
   let [l,t,r,b]=cf.bbox;
   if(headOnly){ b=t+Math.max(8,Math.round((b-t)*0.55)); l+= (r-l)*0.15; r-=(r-l)*0.15; }
   const w=r-l, h=b-t;
@@ -472,6 +475,8 @@ function drawCard(canvas,ch,headOnly){
   c2.save();
   c2.translate((canvas.width-dw)/2 + (flip<0?dw:0), (canvas.height-dh)/2);
   c2.scale(flip,1);
+  
+  // الآن الاستدعاء آمن تماماً حتى لو واجه ملف warrior الفاسد
   c2.drawImage(img, l,t,w,h, 0,0,dw,dh);
   c2.restore();
 }
@@ -978,7 +983,7 @@ function drawTitleArt(){
   drawFighter(c,A,110,266,false);
   drawFighter(c,B,230,266,false);
 }
-loadassets(()=>{
+loadAssets(()=>{
   drawTitleArt(); buildRosterCards();
   $('#startBtn').disabled=false; $('#startBtn').textContent='PRESS START';
 });
@@ -1141,7 +1146,7 @@ if(qs.get('spritetest')){
   document.body.appendChild(tc);
   const c=tc.getContext('2d'); c.imageSmoothingEnabled=false;
   const cases=[['idle','idle',0],['walk','run',0],['punch','attack1',99],['kick','attack2',99],['special','sp',99],['hit','takehit',99],['ko','death',99]];
-  loadassets(()=>{
+  loadAssets(()=>{
     c.fillStyle='#fff'; c.font='16px monospace';
     cases.forEach((cs,i)=>c.fillText(cs[0],60+i*190,24));
     ROSTER.forEach((ch,ri)=>{
