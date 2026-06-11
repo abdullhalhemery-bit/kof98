@@ -364,13 +364,14 @@ const ROSTER = [
 const byId = id => ROSTER.find(r=>r.id===id);
 
 /* ---- asset loading (gated before play) ---- */
-/* ---- asset loading (gated before play) ---- */
 const IMGS = {};         // dir -> {anim: Image}
 let assetsReady = false;
 function loadassets(done){
   const dirs=[...new Set(ROSTER.map(r=>r.dir))];
   let need=0, got=0;
+  
   const fin=()=>{ if(++got===need){ assetsReady=true; done(); } };
+  
   for(const dir of dirs){
     IMGS[dir]={};
     const anims=cfgOf(dir).anims;
@@ -378,20 +379,20 @@ function loadassets(done){
       need++;
       const im=new Image();
       
-      // 1. اربط الأحداث أولاً
       im.onload=fin; 
-      im.onerror=fin;
       
-      // 2. احجز مكان الصورة في الكائن فوراً قبل بدء التحميل
+      // هنا التعديل الذكي: إذا فشلت الصورة سيكتب لك اسمها في الـ Console لتعرفها فوراً
+      im.onerror=(e)=>{
+        console.error("❌ فشل تحميل هذه الصورة بالتحديد:", im.src);
+        fin(); // سنمررها مؤقتاً لمنع تعليق الشاشة تماماً، ولكن دالة الرسم ستحمي نفسها الآن
+      };
+      
       IMGS[dir][anim]=im;
-      
-      // 3. ابدأ التحميل الآن (آخر خطوة)
       im.src='assets/'+dir+'/'+anim+'.png';
     }
   }
   if(!need) done();
 }
-
 /* ---- animation mapping ---- */
 function animDur(ch,anim){ const a=cfgOf(ch.dir).anims[anim]; return (a?a.frames:4)*5; }
 function specialAnim(ch){ return cfgOf(ch.dir).anims.attack3 ? 'attack3' : 'attack2'; }
@@ -418,15 +419,32 @@ function drawFighter(ctx,f,x,y,flash){
   if(m.frame0) fi=0;
   else if(m.loop) fi=Math.floor(f.frame/tpf)%a.frames;
   else fi=Math.min(a.frames-1, Math.floor(f.stateT/5));
+  
   const img=IMGS[ch.dir]&&IMGS[ch.dir][m.anim];
-  if(!img||!img.complete) return;
+  
+  // 1. التحقق من وجود الصورة واكتمال تحميلها بنيوياً في الذاكرة
+  if(!img||!img.complete||img.naturalWidth===0) return;
+
+  // 2. حساب إحداثيات القص وعرض الجزء المراد قصه من السبرايت شيت
+  const sourceX = fi * c.fs;
+  const sourceWidth = c.fs;
+
+  // 3. منع الانهيار (Broken State) إذا كانت الحسبة الرياضية تحاول القراءة خارج حدود أبعاد الصورة الحقيقية
+  if ((sourceX + sourceWidth) > img.naturalWidth) {
+    console.warn(`[Canvas Guard] محاولة قص خارج حدود الصورة لـ ${ch.dir} -> ${m.anim}. أبعاد الصورة: ${img.naturalWidth}, المحاولة عند: ${sourceX + sourceWidth}`);
+    return; 
+  }
+
   const s=meta.scale, flip=f.facing*meta.faceBase;
   ctx.save();
   ctx.translate(x,y);
   ctx.scale(flip, m.squash||1);
   ctx.imageSmoothingEnabled=false;
   if(flash) ctx.filter='brightness(2.4) saturate(.3)';
-  ctx.drawImage(img, fi*c.fs,0,c.fs,c.fs, -c.anchorX*s, -c.anchorY*s, c.fs*s, c.fs*s);
+  
+  // الآن استدعاء الرسم آمن 100% بدون أي تجميد للمتصفح
+  ctx.drawImage(img, sourceX,0,sourceWidth,c.fs, -c.anchorX*s, -c.anchorY*s, c.fs*s, c.fs*s);
+  
   ctx.filter='none';
   ctx.restore();
   if(m.shield){
