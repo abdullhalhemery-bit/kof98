@@ -366,7 +366,7 @@ const byId = id => ROSTER.find(r=>r.id===id);
 /* ---- asset loading (gated before play) ---- */
 const IMGS = {};         // dir -> {anim: Image}
 let assetsReady = false;
-function loadAssets(done){
+function loadassets(done){
   const dirs=[...new Set(ROSTER.map(r=>r.dir))];
   let need=0, got=0;
   const fin=()=>{ if(++got===need){ assetsReady=true; done(); } };
@@ -952,7 +952,7 @@ function drawTitleArt(){
   drawFighter(c,A,110,266,false);
   drawFighter(c,B,230,266,false);
 }
-loadAssets(()=>{
+loadassets(()=>{
   drawTitleArt(); buildRosterCards();
   $('#startBtn').disabled=false; $('#startBtn').textContent='PRESS START';
 });
@@ -1115,7 +1115,7 @@ if(qs.get('spritetest')){
   document.body.appendChild(tc);
   const c=tc.getContext('2d'); c.imageSmoothingEnabled=false;
   const cases=[['idle','idle',0],['walk','run',0],['punch','attack1',99],['kick','attack2',99],['special','sp',99],['hit','takehit',99],['ko','death',99]];
-  loadAssets(()=>{
+  loadassets(()=>{
     c.fillStyle='#fff'; c.font='16px monospace';
     cases.forEach((cs,i)=>c.fillText(cs[0],60+i*190,24));
     ROSTER.forEach((ch,ri)=>{
