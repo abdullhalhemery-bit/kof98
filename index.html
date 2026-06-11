@@ -388,9 +388,11 @@ function loadAssets(done){
       
       IMGS[dir][anim]=im;
       
-      // 💡 جرب تغيير 'assets/' إلى 'Assets/' إذا كان المجلد على GitHub يبدأ بحرف كبير.
-      // حالياً سنتركها 'assets/' صغيرة بناءً على اسم المجلد في جهازك.
-      im.src='assets/'+dir+'/'+anim+'.png';
+      // 💡 تحويل الحرف الأول من اسم الحركة إلى حرف كبير ليطابق اسم الملف (مثال: idle تصبح Idle)
+      const capitalizedAnim = anim.charAt(0).toUpperCase() + anim.slice(1);
+      
+      // سنطلب الملف بالحرف الكبير ليتوافق مع تسمية الملفات المرفوعة
+      im.src='assets/'+dir+'/'+capitalizedAnim+'.png';
     }
   }
   if(!need) done();
