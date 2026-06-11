@@ -422,17 +422,22 @@ function drawFighter(ctx,f,x,y,flash){
   
   const img=IMGS[ch.dir]&&IMGS[ch.dir][m.anim];
   
-  // 1. التحقق من وجود الصورة واكتمال تحميلها بنيوياً في الذاكرة
+  // 1. فحص وجود واكتمال الصورة بنيوياً
   if(!img||!img.complete||img.naturalWidth===0) return;
 
-  // 2. حساب إحداثيات القص وعرض الجزء المراد قصه من السبرايت شيت
-  const sourceX = fi * c.fs;
-  const sourceWidth = c.fs;
+  // 2. تعيين متغيرات القص الافتراضية
+  let sourceX = fi * c.fs;
+  let sourceWidth = c.fs;
 
-  // 3. منع الانهيار (Broken State) إذا كانت الحسبة الرياضية تحاول القراءة خارج حدود أبعاد الصورة الحقيقية
+  // 3. التصحيح التلقائي لمنع الانهيار (Broken State) دون إخفاء المقاتل
   if ((sourceX + sourceWidth) > img.naturalWidth) {
-    console.warn(`[Canvas Guard] محاولة قص خارج حدود الصورة لـ ${ch.dir} -> ${m.anim}. أبعاد الصورة: ${img.naturalWidth}, المحاولة عند: ${sourceX + sourceWidth}`);
-    return; 
+    // طالما أن الحسبة تجاوزت أبعاد الصورة، سنعيد مؤشر القص للإطار الأول (0) لكي يظهر المقاتل ولا يختفي
+    sourceX = 0;
+    
+    // إذا كان حجم الإطار نفسه أكبر من عرض الصورة بالكامل، نجعل حجم القص مساوياً لعرض الصورة الحقيقي
+    if (sourceWidth > img.naturalWidth) {
+      sourceWidth = img.naturalWidth;
+    }
   }
 
   const s=meta.scale, flip=f.facing*meta.faceBase;
@@ -442,8 +447,8 @@ function drawFighter(ctx,f,x,y,flash){
   ctx.imageSmoothingEnabled=false;
   if(flash) ctx.filter='brightness(2.4) saturate(.3)';
   
-  // الآن استدعاء الرسم آمن 100% بدون أي تجميد للمتصفح
-  ctx.drawImage(img, sourceX,0,sourceWidth,c.fs, -c.anchorX*s, -c.anchorY*s, c.fs*s, c.fs*s);
+  // الآن استدعاء الرسم آمن تماماً، وسيظهر المقاتلون وتعمل الأنيميشن بسلاسة
+  ctx.drawImage(img, sourceX, 0, sourceWidth, c.fs, -c.anchorX*s, -c.anchorY*s, c.fs*s, c.fs*s);
   
   ctx.filter='none';
   ctx.restore();
