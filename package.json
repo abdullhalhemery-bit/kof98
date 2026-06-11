@@ -1,0 +1,8 @@
+{
+  "name": "arena-champions-98-server",
+  "version": "1.0.0",
+  "description": "Match relay + leaderboard server for Arena Champions '98 (Farcaster mini app)",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.18.0" }
+}
