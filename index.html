@@ -381,18 +381,26 @@ function loadAssets(done){
       
       im.onload=fin; 
       
+      // إستراتيجية المحاولة البديلة الديناميكية
       im.onerror=(e)=>{
-        console.error("❌ فشل تحميل هذه الصورة بالتحديد:", im.src);
-        fin(); 
+        // إذا فشلت المحاولة الأولى، سنتحقق مما إذا كنا جربنا الحرف الكبير بالفعل أم لا
+        const isCapitalized = im.src.includes(anim.charAt(0).toUpperCase() + anim.slice(1));
+        
+        if (!isCapitalized) {
+          // إذا فشلت الصغيرة، جرب تحويل الحرف الأول لكبير صامتاً دون إظهار خطأ للمستخدم
+          const capitalized = anim.charAt(0).toUpperCase() + anim.slice(1);
+          im.src='assets/'+dir+'/'+capitalized+'.png';
+        } else {
+          // إذا فشلت المحاولتان (الصغيرة والكبيرة)، نطبع تحذيراً نهائياً ونمرر اللعبة لمنع التجميد
+          console.warn("⚠️ لم يتم العثور على الصورة بكلا الحالتين (الصغيرة والكبيرة):", anim);
+          fin();
+        }
       };
       
       IMGS[dir][anim]=im;
       
-      // 💡 تحويل الحرف الأول من اسم الحركة إلى حرف كبير ليطابق اسم الملف (مثال: idle تصبح Idle)
-      const capitalizedAnim = anim.charAt(0).toUpperCase() + anim.slice(1);
-      
-      // سنطلب الملف بالحرف الكبير ليتوافق مع تسمية الملفات المرفوعة
-      im.src='assets/'+dir+'/'+capitalizedAnim+'.png';
+      // ابدأ دائماً بالمحاولة الافتراضية (الحروف الصغيرة تماماً كما هي في كود الأنيميشن)
+      im.src='assets/'+dir+'/'+anim+'.png';
     }
   }
   if(!need) done();
