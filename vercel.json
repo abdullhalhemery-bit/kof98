@@ -24,8 +24,5 @@
         { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
     }
-  ],
-  "ignore": [
-    "server/**"
   ]
 }
