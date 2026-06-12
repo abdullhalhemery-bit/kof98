@@ -1,27 +1,71 @@
-/* Arena Champions '98 — match relay + leaderboard server
+/* King Of Fighters (KOF) — Supabase-powered match relay + leaderboard server
    Run: npm install && npm start  (default port 8090)
    Deploy anywhere that supports Node + WebSockets (Railway, Render, Fly.io, a VPS...).
    Then set SERVER_URL in index.html to e.g. "https://your-server.example.com" */
 const http = require('http');
 const fs = require('fs');
 const { WebSocketServer } = require('ws');
+const { createClient } = require('@supabase/supabase-js');
 
 const PORT = process.env.PORT || 8090;
-const LB_FILE = './leaderboard.json';
 
+/* ---- Supabase connection ---- */
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qupwfpijbtzgitdzawvx.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_r6xSJ5C5afI7sT7pCKkoIQ_kMQ9_T3v';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ---- Leaderboard (now persisted to Supabase) ---- */
 let leaderboard = {};
-try { leaderboard = JSON.parse(fs.readFileSync(LB_FILE, 'utf8')); } catch (e) {}
-let saveTimer = null;
-function saveLb() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => fs.writeFile(LB_FILE, JSON.stringify(leaderboard), () => {}), 500);
+
+async function loadLeaderboard() {
+  try {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .order('wins', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    if (data) {
+      leaderboard = {};
+      data.forEach(row => {
+        const key = row.fid ? 'fid:' + row.fid : 'name:' + row.name;
+        leaderboard[key] = { name: row.name, fid: row.fid, wins: row.wins, losses: row.losses, points: row.points };
+      });
+    }
+    console.log('Leaderboard loaded from Supabase:', Object.keys(leaderboard).length, 'entries');
+  } catch (e) {
+    console.warn('Supabase leaderboard load failed, using empty:', e.message);
+  }
 }
 
+async function saveLeaderboardEntry(key, entry) {
+  try {
+    const { error } = await supabase
+      .from('leaderboard')
+      .upsert({
+        name: entry.name,
+        fid: entry.fid || null,
+        wins: entry.wins,
+        losses: entry.losses,
+        points: entry.points,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'name' });
+    if (error) console.warn('Supabase save error:', error.message);
+  } catch (e) {
+    console.warn('Supabase save failed:', e.message);
+  }
+}
+
+loadLeaderboard();
+
+/* ---- HTTP server ---- */
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, api_key');
 }
+
+const NEYNAR_API_KEY = '045517A1-E2A1-4A41-BCDD-38DDCF2B1724';
 
 const server = http.createServer((req, res) => {
   cors(res);
@@ -35,10 +79,15 @@ const server = http.createServer((req, res) => {
     return res.end(JSON.stringify(list));
   }
 
+  if (req.method === 'GET' && req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ status: 'ok', players: rooms.size, supabase: !!supabase }));
+  }
+
   if (req.method === 'POST' && req.url === '/result') {
     let body = '';
     req.on('data', c => { body += c; if (body.length > 4096) req.destroy(); });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const { name, fid, won, points } = JSON.parse(body);
         if (typeof name !== 'string' || name.length > 40) throw 0;
@@ -47,7 +96,8 @@ const server = http.createServer((req, res) => {
         e.name = name; // keep latest username
         if (won) e.wins++; else e.losses++;
         e.points += Math.max(0, Math.min(1000, points | 0));
-        leaderboard[key] = e; saveLb();
+        leaderboard[key] = e;
+        saveLeaderboardEntry(key, e);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end('{"ok":true}');
       } catch (e) { res.writeHead(400); res.end('{"ok":false}'); }
@@ -55,8 +105,38 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  /* Farcaster webhook endpoint */
+  if (req.method === 'POST' && req.url === '/api/webhook') {
+    let body = '';
+    req.on('data', c => { body += c; if (body.length > 16384) req.destroy(); });
+    req.on('end', async () => {
+      try {
+        const event = JSON.parse(body);
+        console.log('Farcaster webhook event:', event?.event || 'unknown');
+        /* Verify user via Neynar if fid provided */
+        if(event?.event === 'frame_added' && event?.fid && NEYNAR_API_KEY){
+          try{
+            const neynarRes = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${event.fid}`, {
+              headers: { 'api_key': NEYNAR_API_KEY, 'accept': 'application/json' }
+            });
+            const neynarData = await neynarRes.json();
+            if(neynarData?.users?.[0]){
+              console.log('Neynar verified user:', neynarData.users[0].username || event.fid);
+            }
+          }catch(ne){ console.warn('Neynar verification failed:', ne.message); }
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"ok":true}');
+      } catch (e) {
+        res.writeHead(400); res.end('{"ok":false}');
+      }
+    });
+    return;
+  }
+
+  /* Serve static files for the game */
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Arena Champions \'98 server is running.');
+  res.end('KOF server is running (Supabase-connected).');
 });
 
 /* ---- WebSocket match rooms ---- */
@@ -107,4 +187,4 @@ wss.on('connection', ws => {
   });
 });
 
-server.listen(PORT, () => console.log('Arena server on :' + PORT));
+server.listen(PORT, () => console.log('Arena server on :' + PORT + ' (Supabase: ' + SUPABASE_URL + ')'));

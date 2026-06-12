@@ -2,7 +2,10 @@
 
 A 3-vs-3 retro arcade fighting game in classic 90s style, built as a Farcaster mini app.
 
-- **8 fighters** with professional animated pixel-art sprites (idle, run, jump, two attacks, hit, death)
+- **6 visually distinct fighters**, each with their own weapon and fighting style: RONIN's balanced katana, SHADE's fast double-striking twin blades, IGNIS's slow long-reach flame staff, GRIMM's armored cleaver (his heavy swing can't be interrupted), HAZEL's longest-reach hunting spear, and KANE's launcher uppercut. Every fighter also has different HP/speed/power and a unique super (wave slash, shadow dash, meteor orb, boulder toss, triple bolt, lightning cutter)
+- **Best-of-3 duels**: pick one fighter; first to win 2 rounds takes the match (KO or health lead at the bell; perfect rounds earn bonus points)
+- **Guard button** (GUARD / C key) blocks attacks down to 15% damage with a "BLOCK!" cue and builds your super meter
+- **Retro sound**: synthesized arcade SFX (hits, blocks, shots, KO, jingles) + a chiptune battle loop, generated in-browser with WebAudio — no audio files, with a mute toggle
 - **VS Computer** mode with team rotation, super meter and projectile specials
 - **Live PvP**: create a match, invite a friend with a link, or cast an **open challenge** that anyone on Farcaster can join
 - **Points** for winners (victory + survivors + knockouts + supers bonuses)
@@ -14,16 +17,17 @@ A 3-vs-3 retro arcade fighting game in classic 90s style, built as a Farcaster m
 
 Character sprites are the CC0 (Creative Commons Zero) packs by **LuizMelo** on itch.io:
 [Martial Hero](https://luizmelo.itch.io/martial-hero), [Martial Hero 2](https://luizmelo.itch.io/martial-hero-2),
-[EVil Wizard 2](https://luizmelo.itch.io/evil-wizard-2), [Fantasy Warrior](https://luizmelo.itch.io/fantasy-warrior).
+[EVil Wizard 2](https://luizmelo.itch.io/evil-wizard-2), [Fantasy Warrior](https://luizmelo.itch.io/fantasy-warrior),
+[Huntress](https://luizmelo.itch.io/huntress), [Martial Hero 3](https://luizmelo.itch.io/martial-hero-3).
 CC0 allows free commercial use without attribution, but credit is appreciated — consider leaving it in.
-Alternate-color fighters are palette swaps generated from those packs. Stages, UI and effects are original code.
+Stages, UI, sounds and effects are original code.
 This game is an original work and is not affiliated with any commercial fighting-game franchise.
 
 ## Files
 
 ```
-index.html                  the whole game (single file) + assets/ sprite sheets
-assets/<fighter>/*.png      CC0 sprite sheets (8 fighters)
+index.html                  the WHOLE game in one self-contained file (sprites embedded as base64)
+assets/<fighter>/*.png      source CC0 sprite sheets (reference only — not required at runtime)
 server.js                   optional Node server: PvP match relay + leaderboard
 package.json                server dependency (ws)
 .well-known/farcaster.json  mini app manifest (template)
@@ -37,8 +41,10 @@ For PvP/leaderboard locally: `npm install && npm start` (port 8090), then open
 
 ## Deploy
 
-1. **Static hosting** (Vercel/Netlify/Cloudflare Pages…): deploy the project folder so `index.html`,
-   `assets/` and `/.well-known/farcaster.json` are served from your domain.
+1. **Static hosting** (Vercel/Netlify/Cloudflare Pages…): deploy so `index.html` and
+   `/.well-known/farcaster.json` are served from your domain. `index.html` is fully self-contained
+   (all sprites are embedded), so missing-asset or filename-case problems on hosts like Vercel
+   cannot break the fighters.
 2. **Game server** (needed for PvP + global leaderboard): deploy `server.js` to any Node host with
    WebSocket support (Railway, Render, Fly.io, a VPS). Note the public URL, e.g. `https://arena-srv.example.com`.
 3. In `index.html`, set:
@@ -76,5 +82,4 @@ Farcaster (with FID as the key), otherwise a local guest name.
 | Guard | GUARD | C |
 | Super (needs full meter) | SUPER | V |
 
-Win a round by KO or by having more health when the 60s timer ends. Each KO brings in the next
-team member with a time bonus. First team to lose all 3 fighters loses the match.
+Win a round by KO or by having more health when the 60s timer ends. First to 2 round wins takes the match. Equal health at the bell replays the round.

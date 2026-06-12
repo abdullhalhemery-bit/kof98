@@ -1,23 +1,20 @@
 {
-  "_comment": "Replace YOUR-DOMAIN.com everywhere, then generate accountAssociation at https://farcaster.xyz/~/developers/new (domain must match exactly, no https://, no path).",
-  "accountAssociation": {
-    "header": "REPLACE_WITH_GENERATED_HEADER",
-    "payload": "REPLACE_WITH_GENERATED_PAYLOAD",
-    "signature": "REPLACE_WITH_GENERATED_SIGNATURE"
-  },
-  "miniapp": {
+  "frame": {
+    "name": "KOF",
     "version": "1",
-    "name": "Arena Champions '98",
-    "homeUrl": "https://YOUR-DOMAIN.com",
-    "iconUrl": "https://YOUR-DOMAIN.com/icon.png",
-    "splashImageUrl": "https://YOUR-DOMAIN.com/splash.png",
-    "splashBackgroundColor": "#0a0a12",
-    "subtitle": "3v3 retro team fighting",
-    "description": "Pick a team of 3 original fighters and battle in classic 90s arcade style. Fight the CPU or challenge friends to live PvP matches and climb the leaderboard.",
-    "primaryCategory": "games",
-    "tags": ["fighting", "arcade", "retro", "pvp", "multiplayer"],
-    "tagline": "Choose your team. Fight!",
-    "ogTitle": "Arena Champions '98",
-    "ogDescription": "3v3 retro arcade fighting with live PvP on Farcaster."
+    "iconUrl": "https://kof98-woad.vercel.app/icon.png",
+    "homeUrl": "https://kof98-woad.vercel.app",
+    "imageUrl": "https://kof98-woad.vercel.app/image.png",
+    "splashImageUrl": "https://kof98-woad.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://kof98-woad.vercel.app/api/webhook",
+    "subtitle": "https://kof98-woad.vercel.app/icon.png",
+    "description": "https://kof98-woad.vercel.app/icon.png",
+    "primaryCategory": "games"
+  },
+  "accountAssociation": {
+    "header": "eyJmaWQiOjMzMzU3MjMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg0NjYwYjg2YTU2MjBBYjQ2RTA3NTkwMUVlQzgzYjdEM2VhQzIwRmU0In0",
+    "payload": "eyJkb21haW4iOiJrb2Y5OC13b2FkLnZlcmNlbC5hcHAifQ",
+    "signature": "CjB/ecjtiILcqYc5XHD/wTDVtDWcCm2jIAX1Z4fgiPJZcb6x1VXbftekRRW5JvOc9drf+Iia3+ASG25YRDQoHhw="
   }
 }
