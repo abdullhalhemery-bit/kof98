@@ -8,6 +8,11 @@
       "source": "/.well-known/farcaster.json",
       "destination": "https://api.farcaster.xyz/miniapps/hosted-manifest/019eb979-4c91-8e4a-0edb-1f95462676d5",
       "statusCode": 307
+    },
+    {
+      "source": "/well-known/farcaster.json",
+      "destination": "https://api.farcaster.xyz/miniapps/hosted-manifest/019eb979-4c91-8e4a-0edb-1f95462676d5",
+      "statusCode": 307
     }
   ],
   "headers": [
@@ -20,6 +25,12 @@
     },
     {
       "source": "/.well-known/farcaster.json",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    },
+    {
+      "source": "/well-known/farcaster.json",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
