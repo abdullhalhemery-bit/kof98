@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "redirects": [
     {
       "source": "/.well-known/farcaster.json",
@@ -20,5 +24,8 @@
         { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
     }
+  ],
+  "ignore": [
+    "server/**"
   ]
 }
