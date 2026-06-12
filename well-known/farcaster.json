@@ -1,20 +1,18 @@
 {
-  "frame": {
-    "name": "KOF",
-    "version": "1",
-    "iconUrl": "https://kof98-woad.vercel.app/icon.png",
-    "homeUrl": "https://kof98-woad.vercel.app",
-    "imageUrl": "https://kof98-woad.vercel.app/image.png",
-    "splashImageUrl": "https://kof98-woad.vercel.app/splash.png",
-    "splashBackgroundColor": "#000000",
-    "webhookUrl": "https://kof98-woad.vercel.app/api/webhook",
-    "subtitle": "Retro Arcade Fighting",
-    "description": "King Of Fighters - Arena Champions 98. A pixel art fighting game on Farcaster.",
-    "primaryCategory": "games"
-  },
   "accountAssociation": {
     "header": "eyJmaWQiOjMzMzU3MjMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg0NjYwYjg2YTU2MjBBYjQ2RTA3NTkwMUVlQzgzYjdEM2VhQzIwRmU0In0",
     "payload": "eyJkb21haW4iOiJrb2Y5OC13b2FkLnZlcmNlbC5hcHAifQ",
     "signature": "CjB/ecjtiILcqYc5XHD/wTDVtDWcCm2jIAX1Z4fgiPJZcb6x1VXbftekRRW5JvOc9drf+Iia3+ASG25YRDQoHhw="
+  },
+  "frame": {
+    "version": "1",
+    "name": "KOF",
+    "iconUrl": "https://kof98-woad.vercel.app/icon.png",
+    "homeUrl": "https://kof98-woad.vercel.app",
+    "imageUrl": "https://kof98-woad.vercel.app/image.png",
+    "buttonTitle": "FIGHT",
+    "splashImageUrl": "https://kof98-woad.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://kof98-woad.vercel.app/api/webhook"
   }
 }

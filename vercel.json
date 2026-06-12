@@ -3,36 +3,18 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
-  "redirects": [
-    {
-      "source": "/.well-known/farcaster.json",
-      "destination": "https://api.farcaster.xyz/miniapps/hosted-manifest/019eb979-4c91-8e4a-0edb-1f95462676d5",
-      "statusCode": 307
-    },
-    {
-      "source": "/well-known/farcaster.json",
-      "destination": "https://api.farcaster.xyz/miniapps/hosted-manifest/019eb979-4c91-8e4a-0edb-1f95462676d5",
-      "statusCode": 307
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" }
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     },
     {
-      "source": "/.well-known/farcaster.json",
+      "source": "/(.well-known|well-known)/farcaster.json",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
-      ]
-    },
-    {
-      "source": "/well-known/farcaster.json",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Content-Type", "value": "application/json" }
       ]
     }
   ]
